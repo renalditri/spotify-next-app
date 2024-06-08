@@ -2,7 +2,7 @@
 import { useContext } from "react";
 import { useQuery } from "react-query";
 import { AuthContext } from "./contexts/AuthContext";
-import { useSpotify } from "./services/spotifyProfile";
+import { useSpotify } from "./services/useSpotify";
 
 export const Home = () => {
   const authContext = useContext(AuthContext);
