@@ -13,9 +13,9 @@ export const Home = () => {
   const { signIn, signOut, spotifyApi } = useSpotify();
 
   const query = useQuery({
-    queryKey: ["playlists"],
+    queryKey: ["topArtists"],
     queryFn: () => {
-      return spotifyApi?.currentUser.playlists.playlists(50);
+      return spotifyApi?.currentUser.topItems("artists");
     },
     enabled: !!spotifyApi,
   });
@@ -28,10 +28,22 @@ export const Home = () => {
     );
   }
 
+  const genres = () => {
+    const tempObj: { [key: string]: boolean } = {};
+    query.data?.items.forEach((item) => {
+      item.genres.forEach((genre) => {
+        tempObj[genre] = true;
+      });
+    });
+    return Object.keys(tempObj);
+  };
+
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
       <button onClick={() => signOut()}>Logout</button>
-      {query.data?.items.map((item) => <span key={item.id}>{item.name}</span>)}
+      {genres().map((item, index) => (
+        <span key={index}>{item}</span>
+      ))}
     </main>
   );
 };
