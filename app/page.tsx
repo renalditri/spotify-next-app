@@ -1,34 +1,38 @@
 "use client";
-import { signIn, signOut, useSession } from "next-auth/react";
-import { useGetSdk } from "./services/useGetSdk";
-// import { usePlaylists } from "./services/usePlaylists";
+import { useContext } from "react";
 import { useQuery } from "react-query";
+import { AuthContext } from "./contexts/AuthContext";
+import { useSpotify } from "./services/spotifyProfile";
 
 export const Home = () => {
-  const session = useSession();
-  const sdk = useGetSdk();
+  const authContext = useContext(AuthContext);
+  if (authContext === null) {
+    throw Error("Context is not available");
+  }
+  const { accessToken } = authContext;
+  const { signIn, signOut, spotifyApi } = useSpotify();
 
   const query = useQuery({
-    queryKey: ["playlists", session.data?.user?.name],
+    queryKey: ["playlists"],
     queryFn: () => {
-      return sdk.currentUser.playlists.playlists(50);
+      return spotifyApi?.currentUser.playlists.playlists(50);
     },
+    enabled: !!spotifyApi,
   });
-  // const playlists = usePlaylists(sdk);
-  if (!session || session.status !== "authenticated") {
+
+  if (!accessToken || !spotifyApi) {
     return (
       <main className="flex min-h-screen flex-col items-center justify-between p-24">
-        <button onClick={() => signIn("spotify")}>Login</button>
+        <button onClick={() => signIn()}>Login</button>
       </main>
     );
   }
+
   return (
-    <div>
-      <p>
-        Logged in as {session.data.user?.name} {query.isLoading}
-      </p>
-      <button onClick={() => signOut()}>Sign out</button>
-    </div>
+    <main className="flex min-h-screen flex-col items-center justify-between p-24">
+      <button onClick={() => signOut()}>Logout</button>
+      {query.data?.items.map((item) => <span key={item.id}>{item.name}</span>)}
+    </main>
   );
 };
 
